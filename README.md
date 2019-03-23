@@ -1,4 +1,5 @@
-# This project is fork from https://github.com/tensorflow/examples, to play with android image detection
+# best-real-time-image-processsor-android
+This project is fork from https://github.com/tensorflow/examples, to play with android image detection
 
 ## License
 
