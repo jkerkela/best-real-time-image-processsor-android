@@ -76,6 +76,7 @@ public class MultiBoxTracker {
   private final float textSizePx;
   private final BorderedText borderedText;
   public ObjectTracker objectTracker;
+  private DetectedObjectTracker detectedObjectTracker;
   private Matrix frameToCanvasMatrix;
   private int frameWidth;
   private int frameHeight;
@@ -204,6 +205,8 @@ public class MultiBoxTracker {
       this.sensorOrientation = sensorOrientation;
       initialized = true;
 
+      if (detectedObjectTracker == null)
+        detectedObjectTracker = new DetectedObjectTracker();
       if (objectTracker == null) {
         String message =
             "Object tracking support not found. "
@@ -228,6 +231,7 @@ public class MultiBoxTracker {
       if (correlation < MIN_CORRELATION) {
         logger.v("Removing tracked object %s because NCC is %.2f", trackedObject, correlation);
         trackedObject.stopTracking();
+        detectedObjectTracker.remove(recognition);
         trackedObjects.remove(recognition);
 
         availableColors.add(recognition.color);
@@ -278,6 +282,7 @@ public class MultiBoxTracker {
         trackedRecognition.trackedObject = null;
         trackedRecognition.title = potential.second.getTitle();
         trackedRecognition.color = COLORS[trackedObjects.size()];
+        detectedObjectTracker.addIfNotDetectedBefore(trackedRecognition);
         trackedObjects.add(trackedRecognition);
 
         if (trackedObjects.size() >= COLORS.length) {
@@ -381,6 +386,7 @@ public class MultiBoxTracker {
           trackedRecognition.detectionConfidence,
           trackedRecognition.trackedObject.getCurrentCorrelation());
       trackedRecognition.trackedObject.stopTracking();
+      detectedObjectTracker.remove(trackedRecognition);
       trackedObjects.remove(trackedRecognition);
       if (trackedRecognition != recogToReplace) {
         availableColors.add(trackedRecognition.color);
@@ -408,10 +414,12 @@ public class MultiBoxTracker {
     // Use the color from a replaced object before taking one from the color queue.
     trackedRecognition.color =
         recogToReplace != null ? recogToReplace.color : availableColors.poll();
+    detectedObjectTracker.addIfNotDetectedBefore(trackedRecognition);
     trackedObjects.add(trackedRecognition);
   }
 
-  private static class TrackedRecognition {
+  //TODO: add direction "slices" here, so we can tell where this obj was
+  static class TrackedRecognition {
     ObjectTracker.TrackedObject trackedObject;
     RectF location;
     float detectionConfidence;
