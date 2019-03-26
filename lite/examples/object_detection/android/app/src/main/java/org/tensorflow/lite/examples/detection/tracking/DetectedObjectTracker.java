@@ -7,7 +7,7 @@ import org.tensorflow.lite.examples.detection.env.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DetectedObjectTracker {
+class DetectedObjectTracker {
 
     private static final Logger LOGGER = new Logger();
     private List<MultiBoxTracker.TrackedRecognition> detectedObjects = new ArrayList<>();;
@@ -15,33 +15,29 @@ public class DetectedObjectTracker {
     private final float VERTICAL_DIFF_FILTER_VALUE = 70.00f;
 
     void addIfNotDetectedBefore(MultiBoxTracker.TrackedRecognition trackedRecognition) {
-        if(isObjectNotDetectedPreviously(trackedRecognition)) {
+        if(detectedObjects.isEmpty() || isObjectNotDetectedBefore(trackedRecognition)) {
             this.detectedObjects.add(trackedRecognition);
         }
     }
 
-    //TODO: when we should remove detected objects?; when we change direction by 90/120 degree slices(?)
+    //TODO: we should remove detected objects, when they are not on screen when coming in here
     void remove(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         this.detectedObjects.remove(trackedRecognition);
     }
 
-    private boolean isObjectNotDetectedPreviously(MultiBoxTracker.TrackedRecognition trackedRecognition) {
-//        if (detectedObjects.isEmpty() || isObjectTypeNew(recognition.getTitle(), detectedObjects.values())) {
-//            LOGGER.d("Detected NEW image reg by title, MappedREGS: " + detectedObjects);
-//            return true;
-//        }
-        if (detectedObjects.isEmpty()) {
-            LOGGER.d("DetectedObjectTracker, new tracked obj: " + trackedRecognition);
+    private boolean isObjectNotDetectedBefore(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+        List<MultiBoxTracker.TrackedRecognition> detectedMatchingObjects = getMatchingObjects(trackedRecognition.title);
+        if (detectedMatchingObjects.isEmpty()) {
             return true;
         }
-        return isObjectLocationNew(trackedRecognition.location);
+        else return isObjectLocationNew(trackedRecognition, detectedMatchingObjects);
+
     }
 
-    private boolean isObjectLocationNew(RectF location) {
+    private boolean isObjectLocationNew(MultiBoxTracker.TrackedRecognition trackedRecognition, List<MultiBoxTracker.TrackedRecognition> detectedObjects) {
         for (MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
-            //TODO: we need to support directional memory for objects
-            if (doesDetectionRectLocationsDiffer(location, detectedObj.location)) {
-                LOGGER.d("DetectedObjectTracker, new tracked obj: " + location);
+            if (doesDetectionRectLocationsDiffer(trackedRecognition.location, detectedObj.location)) {
+                LOGGER.d("DetectedObjectTracker, new tracked obj: " + trackedRecognition);
                 return true;
             }
         }
@@ -56,16 +52,18 @@ public class DetectedObjectTracker {
     }
 
     private boolean doesValueDifferOverRedundancyFilter(float locationValue, float locationValueToCompareTo, Float filter) {
-        return (locationValue - locationValueToCompareTo > filter);
+        return (Math.abs(locationValue - locationValueToCompareTo) > filter);
     }
 
-//    private boolean isObjectTypeNew(String recognitionTitle, Collection<DetectedObjectTracker> detectedObjectTrackers) {
-//        for (DetectedObjectTracker detectedObj : detectedObjectTrackers) {
-//            if (detectedObj.getTitle().equals(recognitionTitle)) {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
+    private List<MultiBoxTracker.TrackedRecognition> getMatchingObjects(String objectType) {
+        List<MultiBoxTracker.TrackedRecognition> objectList = new ArrayList<>();
+        for(MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
+            if(detectedObj.title.equals(objectType)) {
+                objectList.add(detectedObj);
+            }
+        }
+        return objectList;
+    }
 
 }
+
