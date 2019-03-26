@@ -14,15 +14,29 @@ class DetectedObjectTracker {
     private final float HORIZONTAL_DIFF_FILTER_VALUE = 35.00f;
     private final float VERTICAL_DIFF_FILTER_VALUE = 70.00f;
 
-    void addIfNotDetectedBefore(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+    void invalidateObjects() {
+        for (MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
+            setDetectionStatus(detectedObj, false);
+        }
+    }
+
+    void handleDetection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+        setDetectionStatus(trackedRecognition, true);
         if(detectedObjects.isEmpty() || isObjectNotDetectedBefore(trackedRecognition)) {
             this.detectedObjects.add(trackedRecognition);
         }
     }
 
-    //TODO: we should remove detected objects, when they are not on screen when coming in here
     void remove(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         this.detectedObjects.remove(trackedRecognition);
+    }
+
+    void clearExpiredObjects() {
+        for (MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
+            if(!detectedObj.validDetection){
+                detectedObjects.remove(detectedObj);
+            }
+        }
     }
 
     private boolean isObjectNotDetectedBefore(MultiBoxTracker.TrackedRecognition trackedRecognition) {
@@ -55,6 +69,10 @@ class DetectedObjectTracker {
         return (Math.abs(locationValue - locationValueToCompareTo) > filter);
     }
 
+    private void setDetectionStatus(MultiBoxTracker.TrackedRecognition trackedRecognition, boolean status) {
+        trackedRecognition.validDetection = status;
+    }
+
     private List<MultiBoxTracker.TrackedRecognition> getMatchingObjects(String objectType) {
         List<MultiBoxTracker.TrackedRecognition> objectList = new ArrayList<>();
         for(MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
@@ -64,6 +82,5 @@ class DetectedObjectTracker {
         }
         return objectList;
     }
-
 }
 

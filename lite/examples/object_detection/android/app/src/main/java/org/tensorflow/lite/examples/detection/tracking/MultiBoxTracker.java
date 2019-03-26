@@ -243,6 +243,7 @@ public class MultiBoxTracker {
       final long timestamp, final List<Recognition> results, final byte[] originalFrame) {
     final List<Pair<Float, Recognition>> rectsToTrack = new LinkedList<Pair<Float, Recognition>>();
 
+    detectedObjectTracker.invalidateObjects();
     screenRects.clear();
     final Matrix rgbFrameToScreen = new Matrix(getFrameToCanvasMatrix());
 
@@ -282,13 +283,14 @@ public class MultiBoxTracker {
         trackedRecognition.trackedObject = null;
         trackedRecognition.title = potential.second.getTitle();
         trackedRecognition.color = COLORS[trackedObjects.size()];
-        detectedObjectTracker.addIfNotDetectedBefore(trackedRecognition);
+        detectedObjectTracker.handleDetection(trackedRecognition);
         trackedObjects.add(trackedRecognition);
 
         if (trackedObjects.size() >= COLORS.length) {
           break;
         }
       }
+      detectedObjectTracker.clearExpiredObjects();
       return;
     }
 
@@ -296,6 +298,7 @@ public class MultiBoxTracker {
     for (final Pair<Float, Recognition> potential : rectsToTrack) {
       handleDetection(originalFrame, timestamp, potential);
     }
+    detectedObjectTracker.clearExpiredObjects();
   }
 
   private void handleDetection(
@@ -414,7 +417,7 @@ public class MultiBoxTracker {
     // Use the color from a replaced object before taking one from the color queue.
     trackedRecognition.color =
         recogToReplace != null ? recogToReplace.color : availableColors.poll();
-    detectedObjectTracker.addIfNotDetectedBefore(trackedRecognition);
+    detectedObjectTracker.handleDetection(trackedRecognition);
     trackedObjects.add(trackedRecognition);
   }
 
@@ -425,5 +428,6 @@ public class MultiBoxTracker {
     float detectionConfidence;
     int color;
     String title;
+    boolean validDetection;
   }
 }
