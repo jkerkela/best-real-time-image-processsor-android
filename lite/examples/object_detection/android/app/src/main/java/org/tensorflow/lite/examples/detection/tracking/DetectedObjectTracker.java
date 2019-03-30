@@ -4,11 +4,16 @@ import android.content.Context;
 import android.graphics.RectF;
 import android.widget.Toast;
 
+import org.tensorflow.lite.examples.detection.env.Logger;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 class DetectedObjectTracker {
+
+    private static final Logger LOGGER = new Logger();
+    private final ObjectDistanceProvider objectDistanceProvider;
 
     private Context context;
     private List<MultiBoxTracker.TrackedRecognition> detectedObjects = new ArrayList<>();
@@ -18,6 +23,7 @@ class DetectedObjectTracker {
 
     DetectedObjectTracker(Context context) {
         this.context = context;
+        this.objectDistanceProvider = new ObjectDistanceProvider(context);
     }
     void invalidateObjects() {
         for (MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
@@ -28,6 +34,9 @@ class DetectedObjectTracker {
     void handleDetection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         setDetectionStatus(trackedRecognition, true);
         if(detectedObjects.isEmpty() || isObjectNotDetectedBefore(trackedRecognition)) {
+            //TODO: apply this information to rectangle
+            trackedRecognition.distance = objectDistanceProvider.getDistanceToScreenPoint();
+            LOGGER.d("Object distance: " + trackedRecognition.distance + " for object: " + trackedRecognition.title);
             this.detectedObjects.add(trackedRecognition);
         }
     }
