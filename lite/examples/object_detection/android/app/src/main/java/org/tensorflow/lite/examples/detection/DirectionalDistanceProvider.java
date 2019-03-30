@@ -1,4 +1,4 @@
-package org.tensorflow.lite.examples.detection.tracking;
+package org.tensorflow.lite.examples.detection;
 
 import android.content.Context;
 import android.hardware.Sensor;
@@ -8,19 +8,20 @@ import android.hardware.SensorManager;
 
 import static android.content.Context.SENSOR_SERVICE;
 
-class ObjectDistanceProvider implements SensorEventListener {
+class DirectionalDistanceProvider implements SensorEventListener {
 
     SensorManager mSensorManager;
     Sensor accSensor;
     Sensor magnetSensor;
     private float[] gravity;
     private float[] geoMagnetic;
+    //for portrait mode
     private float pitch;
-    //TODO: use azimut & roll to evaluate current angle, and not update distance to object if angle is not level
     private float azimut;
+    //for landscape mode
     private float roll;
 
-    ObjectDistanceProvider(Context context) {
+    DirectionalDistanceProvider(Context context) {
         initializeSensors(context);
         registerSensorListeners();
     }
@@ -61,7 +62,7 @@ class ObjectDistanceProvider implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) { }
 
-    Float getDistanceToScreenPoint() {
+    Float getDistanceToObjectInDirection() {
         return Math.abs((float) (1.4f * Math.tan(pitch * Math.PI / 180)));
     }
 }
