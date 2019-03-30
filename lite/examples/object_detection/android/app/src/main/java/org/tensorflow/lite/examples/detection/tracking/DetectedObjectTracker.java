@@ -1,19 +1,24 @@
 package org.tensorflow.lite.examples.detection.tracking;
 
+import android.content.Context;
 import android.graphics.RectF;
-
-import org.tensorflow.lite.examples.detection.env.Logger;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 class DetectedObjectTracker {
 
-    private static final Logger LOGGER = new Logger();
-    private List<MultiBoxTracker.TrackedRecognition> detectedObjects = new ArrayList<>();;
-    private final float HORIZONTAL_DIFF_FILTER_VALUE = 35.00f;
-    private final float VERTICAL_DIFF_FILTER_VALUE = 70.00f;
+    private Context context;
+    private List<MultiBoxTracker.TrackedRecognition> detectedObjects = new ArrayList<>();
+    private static final float HORIZONTAL_DIFF_FILTER_VALUE = 35.00f;
+    private static final float VERTICAL_DIFF_FILTER_VALUE = 70.00f;
 
+
+    DetectedObjectTracker(Context context) {
+        this.context = context;
+    }
     void invalidateObjects() {
         for (MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
             setDetectionStatus(detectedObj, false);
@@ -32,9 +37,12 @@ class DetectedObjectTracker {
     }
 
     void clearExpiredObjects() {
-        for (MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
+        Iterator<MultiBoxTracker.TrackedRecognition> iterator = detectedObjects.iterator();
+        while (iterator.hasNext()) {
+            MultiBoxTracker.TrackedRecognition detectedObj = iterator.next();
             if(!detectedObj.validDetection){
-                detectedObjects.remove(detectedObj);
+                iterator.remove();
+                Toast.makeText(context, "Object out of view: " + detectedObj.title, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -51,7 +59,7 @@ class DetectedObjectTracker {
     private boolean isObjectLocationNew(MultiBoxTracker.TrackedRecognition trackedRecognition, List<MultiBoxTracker.TrackedRecognition> detectedObjects) {
         for (MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
             if (doesDetectionRectLocationsDiffer(trackedRecognition.location, detectedObj.location)) {
-                LOGGER.d("DetectedObjectTracker, new tracked obj: " + trackedRecognition);
+                Toast.makeText(context, "New object: " + trackedRecognition.title, Toast.LENGTH_SHORT).show();
                 return true;
             }
         }

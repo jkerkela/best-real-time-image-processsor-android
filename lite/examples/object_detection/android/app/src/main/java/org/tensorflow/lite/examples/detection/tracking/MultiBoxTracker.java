@@ -206,7 +206,7 @@ public class MultiBoxTracker {
       initialized = true;
 
       if (detectedObjectTracker == null)
-        detectedObjectTracker = new DetectedObjectTracker();
+        detectedObjectTracker = new DetectedObjectTracker(context);
       if (objectTracker == null) {
         String message =
             "Object tracking support not found. "
