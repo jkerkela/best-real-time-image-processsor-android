@@ -63,7 +63,8 @@ class DirectionalDistanceProvider implements SensorEventListener {
     public void onAccuracyChanged(Sensor sensor, int i) { }
 
     Float getDistanceToObjectInDirection() {
-        //TODO: check orientation and use roll if landescape, check values
-        return Math.abs((float) (1.4f * Math.tan(pitch * Math.PI / 180)));
+        float distWithPortrait = Math.abs((float) (1.4f * Math.tan(pitch * Math.PI / 180)));
+        float distByLandscape = Math.abs((float) (1.4f * Math.tan(roll * Math.PI / 180)));
+        return Math.max(distWithPortrait, distByLandscape);
     }
 }

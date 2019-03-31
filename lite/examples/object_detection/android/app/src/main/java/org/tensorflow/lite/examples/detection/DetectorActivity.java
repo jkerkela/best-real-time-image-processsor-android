@@ -247,13 +247,13 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   }
 
   private void checkObjectInDirection() {
-    if(isCollisionPlausible()) {
-      Toast.makeText(this, "Object in front within 1 meter, collision plausible", Toast.LENGTH_LONG).show();
+    if(doObjectsExistsInCloseRangeDirectionally()) {
+      Toast.makeText(this, "Object in front in immediate proximity", Toast.LENGTH_LONG).show();
     }
   }
 
-  private boolean isCollisionPlausible() {
-    return (directionalDistanceProvider.getDistanceToObjectInDirection() < 1.0);
+  private boolean doObjectsExistsInCloseRangeDirectionally() {
+    return (directionalDistanceProvider.getDistanceToObjectInDirection() < 5.0);
   }
 
   @Override
