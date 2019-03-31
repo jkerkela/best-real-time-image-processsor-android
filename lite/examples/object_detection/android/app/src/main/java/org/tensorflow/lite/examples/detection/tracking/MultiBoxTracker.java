@@ -429,6 +429,5 @@ public class MultiBoxTracker {
     int color;
     String title;
     boolean validDetection;
-    Float distance;
   }
 }

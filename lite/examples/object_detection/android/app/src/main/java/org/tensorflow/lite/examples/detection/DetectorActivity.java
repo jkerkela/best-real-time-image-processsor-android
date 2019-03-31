@@ -84,10 +84,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   private BorderedText borderedText;
 
-  private final DirectionalDistanceProvider directionalDistanceProvider = new DirectionalDistanceProvider(this);
+  private DirectionalDistanceProvider directionalDistanceProvider;
 
   @Override
   public void onPreviewSizeChosen(final Size size, final int rotation) {
+    directionalDistanceProvider = new DirectionalDistanceProvider(this);
     final float textSizePx =
         TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP, getResources().getDisplayMetrics());
@@ -154,6 +155,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     ++timestamp;
     final long currTimestamp = timestamp;
     byte[] originalLuminance = getLuminance();
+    //TODO: this needs to be initialized before this as final obj
+    //directionalDistanceProvider = new DirectionalDistanceProvider(this);
     checkObjectInDirection();
     tracker.onFrame(
         previewWidth,
@@ -244,7 +247,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   }
 
   private void checkObjectInDirection() {
-    //TODO: test this
     if(isCollisionPlausible()) {
       Toast.makeText(this, "Object in front within 1 meter, collision plausible", Toast.LENGTH_LONG).show();
     }

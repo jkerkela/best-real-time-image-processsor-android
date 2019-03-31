@@ -42,9 +42,9 @@ class DirectionalDistanceProvider implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
-            gravity = event.values.clone();
+            gravity = event.values;
         if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
-            geoMagnetic = event.values.clone();
+            geoMagnetic = event.values;
         if (gravity != null && geoMagnetic != null) {
             float R[] = new float[9];
             float I[] = new float[9];
@@ -63,6 +63,7 @@ class DirectionalDistanceProvider implements SensorEventListener {
     public void onAccuracyChanged(Sensor sensor, int i) { }
 
     Float getDistanceToObjectInDirection() {
+        //TODO: check orientation and use roll if landescape, check values
         return Math.abs((float) (1.4f * Math.tan(pitch * Math.PI / 180)));
     }
 }

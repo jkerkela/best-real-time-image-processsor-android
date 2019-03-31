@@ -14,7 +14,6 @@ class DetectedObjectTracker {
     private List<MultiBoxTracker.TrackedRecognition> detectedObjects = new ArrayList<>();
     private static final float HORIZONTAL_DIFF_FILTER_VALUE = 35.00f;
     private static final float VERTICAL_DIFF_FILTER_VALUE = 70.00f;
-    private MultiBoxTracker.TrackedRecognition detectedMatchingObject;
 
 
     DetectedObjectTracker(Context context) {
@@ -28,19 +27,17 @@ class DetectedObjectTracker {
 
     void handleDetection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         setDetectionStatus(trackedRecognition, true);
+        checkRelativeDistance(trackedRecognition);
         if(detectedObjects.isEmpty() || isObjectNotDetectedBefore(trackedRecognition)) {
             this.detectedObjects.add(trackedRecognition);
-        } else {
-            checkRelativeDistance(trackedRecognition);
         }
     }
 
-    //TODO: test
     private void checkRelativeDistance(MultiBoxTracker.TrackedRecognition trackedRecognition) {
-        Float newAreaOfObject = calculateRelativeAreaOfObject(trackedRecognition.location);
-        Float previousAreaOfObject = calculateRelativeAreaOfObject(detectedMatchingObject.location);
-        if((newAreaOfObject / previousAreaOfObject) > 1.5) {
-            Toast.makeText(context, "Object: " + trackedRecognition.title + " approaching fast",
+        Float relativeSizeOfObject = calculateRelativeAreaOfObject(trackedRecognition.location);
+        Float immediateNearZone = 50000.0f;
+        if(relativeSizeOfObject > immediateNearZone) {
+            Toast.makeText(context, "Object: " + trackedRecognition.title + " very near",
                     Toast.LENGTH_SHORT).show();
         }
     }
@@ -80,15 +77,9 @@ class DetectedObjectTracker {
             if (doesDetectionRectLocationsDiffer(trackedRecognition.location, detectedObj.location)) {
                 Toast.makeText(context, "New object: " + trackedRecognition.title, Toast.LENGTH_SHORT).show();
                 return true;
-            } else {
-                setDetectedMatchingObject(detectedObj);
             }
         }
         return false;
-    }
-
-    private void setDetectedMatchingObject(MultiBoxTracker.TrackedRecognition detectedObj) {
-        this.detectedMatchingObject = detectedObj;
     }
 
     private boolean doesDetectionRectLocationsDiffer(RectF recognitionLocation, RectF detectedLocation) {
