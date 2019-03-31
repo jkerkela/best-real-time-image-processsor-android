@@ -14,7 +14,19 @@ class DetectedObjectTracker {
     private List<MultiBoxTracker.TrackedRecognition> detectedObjects = new ArrayList<>();
     private static final float HORIZONTAL_DIFF_FILTER_VALUE = 35.00f;
     private static final float VERTICAL_DIFF_FILTER_VALUE = 70.00f;
+    private static final float IMMEDIATE_NEAR_ZONE = 50000.0f;
 
+    private enum Direction {
+        IN_FRONT("Front"),
+        LEFT("Left"),
+        RIGHT("Right");
+
+        private final String name;
+
+        private Direction(String s) {
+            name = s;
+        }
+    }
 
     DetectedObjectTracker(Context context) {
         this.context = context;
@@ -29,15 +41,27 @@ class DetectedObjectTracker {
         setDetectionStatus(trackedRecognition, true);
         checkRelativeDistance(trackedRecognition);
         if(detectedObjects.isEmpty() || isObjectNotDetectedBefore(trackedRecognition)) {
+            String direction = getObjectDirection(trackedRecognition);
+            Toast.makeText(context, "New object: " + trackedRecognition.title + " on direction: " + direction, Toast.LENGTH_SHORT).show();
             this.detectedObjects.add(trackedRecognition);
+        }
+    }
+
+    //TODO: works only in portrait mode
+    private String getObjectDirection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+        if (trackedRecognition.location.top < 100) {
+            return Direction.RIGHT.name;
+        } else if (trackedRecognition.location.top > 400) {
+            return Direction.LEFT.name;
+        } else {
+            return Direction.IN_FRONT.name;
         }
     }
 
     private void checkRelativeDistance(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         Float relativeSizeOfObject = calculateRelativeAreaOfObject(trackedRecognition.location);
-        Float immediateNearZone = 50000.0f;
-        if(relativeSizeOfObject > immediateNearZone) {
-            Toast.makeText(context, "Object: " + trackedRecognition.title + " very near",
+        if(relativeSizeOfObject > IMMEDIATE_NEAR_ZONE) {
+            Toast.makeText(context, "Object: " + trackedRecognition.title + " in immediate proximity",
                     Toast.LENGTH_SHORT).show();
         }
     }
@@ -75,7 +99,6 @@ class DetectedObjectTracker {
     private boolean isObjectLocationNew(MultiBoxTracker.TrackedRecognition trackedRecognition, List<MultiBoxTracker.TrackedRecognition> detectedObjects) {
         for (MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
             if (doesDetectionRectLocationsDiffer(trackedRecognition.location, detectedObj.location)) {
-                Toast.makeText(context, "New object: " + trackedRecognition.title, Toast.LENGTH_SHORT).show();
                 return true;
             }
         }
