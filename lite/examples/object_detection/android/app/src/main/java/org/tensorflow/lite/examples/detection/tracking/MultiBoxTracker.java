@@ -274,6 +274,7 @@ public class MultiBoxTracker {
       return;
     }
 
+    detectedObjectTracker.updateIncomingDetections(results);
     if (objectTracker == null) {
       trackedObjects.clear();
       for (final Pair<Float, Recognition> potential : rectsToTrack) {
@@ -429,5 +430,6 @@ public class MultiBoxTracker {
     int color;
     String title;
     boolean validDetection;
+    DetectedObjectTracker.Direction direction;
   }
 }

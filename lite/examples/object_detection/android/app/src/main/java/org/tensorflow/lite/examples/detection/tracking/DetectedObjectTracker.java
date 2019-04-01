@@ -4,7 +4,10 @@ import android.content.Context;
 import android.graphics.RectF;
 import android.widget.Toast;
 
+import org.tensorflow.lite.examples.detection.tflite.Classifier;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -12,11 +15,13 @@ class DetectedObjectTracker {
 
     private Context context;
     private List<MultiBoxTracker.TrackedRecognition> detectedObjects = new ArrayList<>();
-    private static final float HORIZONTAL_DIFF_FILTER_VALUE = 35.00f;
-    private static final float VERTICAL_DIFF_FILTER_VALUE = 70.00f;
+    private List<String> newDetections = new ArrayList<>();
+    private static final float VERTICAL_DIFF_FILTER_VALUE = 35.00f;
+    private static final float HORIZONTAL_DIFF_FILTER_VALUE = 70.00f;
     private static final float IMMEDIATE_NEAR_ZONE = 50000.0f;
 
-    private enum Direction {
+    //TODO: create class from this
+    public enum Direction {
         IN_FRONT("Front"),
         LEFT("Left"),
         RIGHT("Right");
@@ -31,6 +36,14 @@ class DetectedObjectTracker {
     DetectedObjectTracker(Context context) {
         this.context = context;
     }
+
+    void updateIncomingDetections(List<Classifier.Recognition> results) {
+        newDetections.clear();
+        for (Classifier.Recognition recognition : results) {
+            newDetections.add(recognition.getTitle());
+        }
+    }
+
     void invalidateObjects() {
         for (MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
             setDetectionStatus(detectedObj, false);
@@ -40,21 +53,39 @@ class DetectedObjectTracker {
     void handleDetection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         setDetectionStatus(trackedRecognition, true);
         checkRelativeDistance(trackedRecognition);
-        if(detectedObjects.isEmpty() || isObjectNotDetectedBefore(trackedRecognition)) {
-            String direction = getObjectDirection(trackedRecognition);
-            Toast.makeText(context, "New object: " + trackedRecognition.title + " on direction: " + direction, Toast.LENGTH_SHORT).show();
+        if (!areAllObjectsOfTypeAlreadyTracked(trackedRecognition)) {
+            handlePotentialNewObject(trackedRecognition);
+        }
+        updateDirection(trackedRecognition);
+    }
+
+    private void handlePotentialNewObject(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+        if(detectedObjects.isEmpty() || !isObjectDetectedBefore(trackedRecognition)) {
             this.detectedObjects.add(trackedRecognition);
+            Toast.makeText(context, "New object: " + trackedRecognition.title + " on direction: "
+                    + trackedRecognition.direction, Toast.LENGTH_SHORT).show();
         }
     }
 
+    private void updateDirection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+        trackedRecognition.direction = getObjectDirection(trackedRecognition);
+    }
+
+    private boolean areAllObjectsOfTypeAlreadyTracked(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+        return (getMatchingDetectedObjects(trackedRecognition.title).size() >=
+                getNumberOfMatches(newDetections, trackedRecognition.title));
+    }
+
     //TODO: works only in portrait mode
-    private String getObjectDirection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
-        if (trackedRecognition.location.top < 100) {
-            return Direction.RIGHT.name;
-        } else if (trackedRecognition.location.top > 400) {
-            return Direction.LEFT.name;
+    private Direction getObjectDirection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+        if (trackedRecognition.location.left < 200) {
+            return Direction.IN_FRONT;
+        } else if (trackedRecognition.location.top < 150) {
+            return Direction.RIGHT;
+        } else if (trackedRecognition.location.top > 350) {
+            return Direction.LEFT;
         } else {
-            return Direction.IN_FRONT.name;
+            return Direction.IN_FRONT;
         }
     }
 
@@ -87,12 +118,13 @@ class DetectedObjectTracker {
         }
     }
 
-    private boolean isObjectNotDetectedBefore(MultiBoxTracker.TrackedRecognition trackedRecognition) {
-        List<MultiBoxTracker.TrackedRecognition> detectedMatchingObjects = getMatchingObjects(trackedRecognition.title);
-        if (detectedMatchingObjects.isEmpty()) {
+    private boolean isObjectDetectedBefore(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+        List<MultiBoxTracker.TrackedRecognition> detectedMatchingObjectsByTitle =
+                getMatchingDetectedObjects(trackedRecognition.title);
+        if (detectedMatchingObjectsByTitle.isEmpty()) {
             return true;
         }
-        else return isObjectLocationNew(trackedRecognition, detectedMatchingObjects);
+        else return isObjectLocationNew(trackedRecognition, detectedMatchingObjectsByTitle);
 
     }
 
@@ -120,7 +152,11 @@ class DetectedObjectTracker {
         trackedRecognition.validDetection = status;
     }
 
-    private List<MultiBoxTracker.TrackedRecognition> getMatchingObjects(String objectType) {
+    private int getNumberOfMatches(List<String> list, String item) {
+        return Collections.frequency(list, item);
+    }
+
+    private List<MultiBoxTracker.TrackedRecognition> getMatchingDetectedObjects(String objectType) {
         List<MultiBoxTracker.TrackedRecognition> objectList = new ArrayList<>();
         for(MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
             if(detectedObj.title.equals(objectType)) {
@@ -130,4 +166,3 @@ class DetectedObjectTracker {
         return objectList;
     }
 }
-
