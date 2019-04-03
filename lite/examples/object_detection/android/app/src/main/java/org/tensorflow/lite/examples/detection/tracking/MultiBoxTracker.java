@@ -422,7 +422,6 @@ public class MultiBoxTracker {
     trackedObjects.add(trackedRecognition);
   }
 
-  //TODO: add direction "slices" here, so we can tell where this obj was
   static class TrackedRecognition {
     ObjectTracker.TrackedObject trackedObject;
     RectF location;
@@ -430,6 +429,6 @@ public class MultiBoxTracker {
     int color;
     String title;
     boolean validDetection;
-    DetectedObjectTracker.Direction direction;
+    ObjectLocationProvider.Direction direction;
   }
 }
