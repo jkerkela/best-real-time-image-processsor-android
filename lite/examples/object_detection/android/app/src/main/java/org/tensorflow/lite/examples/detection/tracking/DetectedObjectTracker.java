@@ -1,7 +1,6 @@
 package org.tensorflow.lite.examples.detection.tracking;
 
 import android.content.Context;
-import android.widget.Toast;
 
 import org.tensorflow.lite.examples.detection.tflite.Classifier;
 
@@ -12,13 +11,11 @@ import java.util.List;
 
 class DetectedObjectTracker {
 
-    private Context context;
     private List<MultiBoxTracker.TrackedRecognition> detectedObjects = new ArrayList<>();
     private List<String> newDetections = new ArrayList<>();
     private NotificationProvider notificationProvider;
 
     DetectedObjectTracker(Context context) {
-        this.context = context;
         this.notificationProvider = new NotificationProvider(context);
     }
 
@@ -113,7 +110,7 @@ class DetectedObjectTracker {
             MultiBoxTracker.TrackedRecognition detectedObj = iterator.next();
             if(!detectedObj.validDetection){
                 iterator.remove();
-                Toast.makeText(context, "Object out of view: " + detectedObj.title, Toast.LENGTH_SHORT).show();
+                notificationProvider.makeObjectOutOffSightNotification(detectedObj);
             }
         }
     }

@@ -1,23 +1,48 @@
 package org.tensorflow.lite.examples.detection.tracking;
 
 import android.content.Context;
+import android.speech.tts.TextToSpeech;
 import android.widget.Toast;
 
-class NotificationProvider {
+import java.util.Locale;
+import java.util.UUID;
+
+class NotificationProvider implements TextToSpeech.OnInitListener {
 
     private final Context context;
+    private TextToSpeech myTTS;
 
     NotificationProvider(Context context) {
+        myTTS = new TextToSpeech(context, this);
         this.context = context;
     }
 
     void makeImmediateObjectProximityNotification(MultiBoxTracker.TrackedRecognition trackedRecognition) {
-        Toast.makeText(context, "Object: " + trackedRecognition.title + " in immediate proximity",
-                Toast.LENGTH_SHORT).show();
+        makeVoiceNotification("Object: " + trackedRecognition.title + " in immediate proximity");
     }
 
     void makeNewObjectNotification(MultiBoxTracker.TrackedRecognition trackedRecognition) {
-        Toast.makeText(context, "New object: " + trackedRecognition.title + " on direction: "
-                + trackedRecognition.direction, Toast.LENGTH_SHORT).show();
+        makeVoiceNotification("New object: " + trackedRecognition.title + " on direction: "
+                + trackedRecognition.direction);
+    }
+
+    void makeObjectOutOffSightNotification(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+        makeVoiceNotification("Object out of view: " + trackedRecognition.title);
+    }
+
+    private void makeVoiceNotification(String notification) {
+        UUID uniqueIdentifier = UUID.randomUUID();
+        myTTS.speak(notification, TextToSpeech.QUEUE_FLUSH, null, uniqueIdentifier.toString());
+    }
+
+    @Override
+    public void onInit(int initStatus) {
+        if (initStatus == TextToSpeech.SUCCESS) {
+            if(myTTS.isLanguageAvailable(Locale.US)==TextToSpeech.LANG_AVAILABLE)
+                myTTS.setLanguage(Locale.US);
+        }
+        else if (initStatus == TextToSpeech.ERROR) {
+            Toast.makeText(context, "Sorry! Text To Speech failed.", Toast.LENGTH_LONG).show();
+        }
     }
 }
