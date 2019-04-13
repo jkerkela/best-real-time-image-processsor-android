@@ -4,8 +4,8 @@ import android.graphics.RectF;
 
 class ObjectLocationProvider {
 
-    private static final float VERTICAL_DIFF_FILTER_VALUE = 35.00f;
-    private static final float HORIZONTAL_DIFF_FILTER_VALUE = 70.00f;
+    private static final float VERTICAL_DIFF_FILTER_VALUE = 70.00f;
+    private static final float HORIZONTAL_DIFF_FILTER_VALUE = 90.00f;
     private static final float IMMEDIATE_NEAR_ZONE = 50000.0f;
     private static final float VERTICAL_LEFT_DIRECTION_THRESHOLD = 350;
     private static final float VERTICAL_RIGHT_DIRECTION_THRESHOLD = 150;

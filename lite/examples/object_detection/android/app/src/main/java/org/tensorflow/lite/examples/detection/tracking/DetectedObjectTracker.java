@@ -22,14 +22,16 @@ class DetectedObjectTracker {
     void handleDetection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         setDetectionStatus(trackedRecognition, true);
         checkObjectDistance(trackedRecognition);
+        updateDirection(trackedRecognition);
         if (!areAllObjectsOfTypeAlreadyTracked(trackedRecognition)) {
             handlePotentialNewObject(trackedRecognition);
+        } else {
+            updateDetectedObjectData(trackedRecognition);
         }
-        updateDirection(trackedRecognition);
     }
 
     private boolean areAllObjectsOfTypeAlreadyTracked(MultiBoxTracker.TrackedRecognition trackedRecognition) {
-        return (getMatchingDetectedObjects(trackedRecognition.title).size() >=
+        return (getMatchingDetectedObjectsByType(trackedRecognition.title).size() >=
                 getNumberOfMatches(newDetections, trackedRecognition.title));
     }
 
@@ -37,7 +39,7 @@ class DetectedObjectTracker {
         trackedRecognition.validDetection = status;
     }
 
-    private List<MultiBoxTracker.TrackedRecognition> getMatchingDetectedObjects(String objectType) {
+    private List<MultiBoxTracker.TrackedRecognition> getMatchingDetectedObjectsByType(String objectType) {
         List<MultiBoxTracker.TrackedRecognition> objectList = new ArrayList<>();
         for(MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
             if(detectedObj.title.equals(objectType)) {
@@ -66,7 +68,7 @@ class DetectedObjectTracker {
 
     private boolean isObjectDetectedBefore(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         List<MultiBoxTracker.TrackedRecognition> detectedMatchingObjectsByTitle =
-                getMatchingDetectedObjects(trackedRecognition.title);
+                getMatchingDetectedObjectsByType(trackedRecognition.title);
         if (detectedMatchingObjectsByTitle.isEmpty()) {
             return true;
         }
@@ -77,6 +79,7 @@ class DetectedObjectTracker {
                                         List<MultiBoxTracker.TrackedRecognition> detectedObjects) {
         for (MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
             if (ObjectLocationProvider.doesDetectionRectLocationsDiffer(trackedRecognition.location, detectedObj.location)) {
+                updateDetectedObjectData(trackedRecognition);
                 return true;
             }
         }
@@ -85,6 +88,27 @@ class DetectedObjectTracker {
 
     private void updateDirection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         trackedRecognition.direction = ObjectLocationProvider.getObjectDirection(trackedRecognition);
+    }
+
+    private void updateDetectedObjectData(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+        MultiBoxTracker.TrackedRecognition matchingObj = getMatchingObjectOrNull(trackedRecognition);
+        if (matchingObj != null) {
+            detectedObjects.remove(matchingObj);
+        } else {
+            List<MultiBoxTracker.TrackedRecognition> matchingObjsByType = getMatchingDetectedObjectsByType(trackedRecognition.title);
+            MultiBoxTracker.TrackedRecognition deprecatedObj = matchingObjsByType.get(0);
+            detectedObjects.remove(deprecatedObj);
+        }
+        detectedObjects.add(trackedRecognition);
+    }
+
+    private MultiBoxTracker.TrackedRecognition getMatchingObjectOrNull(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+        for (MultiBoxTracker.TrackedRecognition detectedObj : detectedObjects) {
+            if (!ObjectLocationProvider.doesDetectionRectLocationsDiffer(trackedRecognition.location, detectedObj.location)) {
+                return detectedObj;
+            }
+        }
+        return null;
     }
 
     void updateIncomingDetections(List<Classifier.Recognition> results) {
