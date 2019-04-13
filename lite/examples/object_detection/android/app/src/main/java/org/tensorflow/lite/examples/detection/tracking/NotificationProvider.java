@@ -7,14 +7,18 @@ import android.widget.Toast;
 import java.util.Locale;
 import java.util.UUID;
 
-class NotificationProvider implements TextToSpeech.OnInitListener {
+public class NotificationProvider implements TextToSpeech.OnInitListener {
 
     private final Context context;
     private TextToSpeech myTTS;
 
-    NotificationProvider(Context context) {
+    public NotificationProvider(Context context) {
         myTTS = new TextToSpeech(context, this);
         this.context = context;
+    }
+
+    public void makeImmediateObjectInDirectionProximityNotification() {
+        makeVoiceNotification("Object in front in immediate proximity");
     }
 
     void makeImmediateObjectProximityNotification(MultiBoxTracker.TrackedRecognition trackedRecognition) {
@@ -24,10 +28,6 @@ class NotificationProvider implements TextToSpeech.OnInitListener {
     void makeNewObjectNotification(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         makeVoiceNotification("New object: " + trackedRecognition.title + " on direction: "
                 + trackedRecognition.direction);
-    }
-
-    void makeObjectOutOffSightNotification(MultiBoxTracker.TrackedRecognition trackedRecognition) {
-        makeVoiceNotification("Object out of view: " + trackedRecognition.title);
     }
 
     private void makeVoiceNotification(String notification) {

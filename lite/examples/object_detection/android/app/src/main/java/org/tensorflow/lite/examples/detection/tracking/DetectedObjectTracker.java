@@ -87,7 +87,7 @@ class DetectedObjectTracker {
     }
 
     private void updateDirection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
-        trackedRecognition.direction = ObjectLocationProvider.getObjectDirection(trackedRecognition);
+        trackedRecognition.direction = ObjectLocationProvider.getObjectDirection(trackedRecognition).name();
     }
 
     private void updateDetectedObjectData(MultiBoxTracker.TrackedRecognition trackedRecognition) {
@@ -134,7 +134,6 @@ class DetectedObjectTracker {
             MultiBoxTracker.TrackedRecognition detectedObj = iterator.next();
             if(!detectedObj.validDetection){
                 iterator.remove();
-                notificationProvider.makeObjectOutOffSightNotification(detectedObj);
             }
         }
     }

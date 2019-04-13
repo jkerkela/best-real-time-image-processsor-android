@@ -429,6 +429,6 @@ public class MultiBoxTracker {
     int color;
     String title;
     boolean validDetection;
-    ObjectLocationProvider.Direction direction;
+    String direction;
   }
 }

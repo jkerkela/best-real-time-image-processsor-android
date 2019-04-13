@@ -41,6 +41,7 @@ import org.tensorflow.lite.examples.detection.env.Logger;
 import org.tensorflow.lite.examples.detection.tflite.Classifier;
 import org.tensorflow.lite.examples.detection.tflite.TFLiteObjectDetectionAPIModel;
 import org.tensorflow.lite.examples.detection.tracking.MultiBoxTracker;
+import org.tensorflow.lite.examples.detection.tracking.NotificationProvider;
 
 /**
  * An activity that uses a TensorFlowMultiBoxDetector and ObjectTracker to detect and then track
@@ -85,10 +86,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private BorderedText borderedText;
 
   private DirectionalDistanceProvider directionalDistanceProvider;
+  private NotificationProvider notificationProcider;
+  private Long OBJECT_IN_DIRECTION_COOLDOWN_IN_SECONDS = 5L;
+  private long latestObjectInDirectionCheck;
 
   @Override
   public void onPreviewSizeChosen(final Size size, final int rotation) {
     directionalDistanceProvider = new DirectionalDistanceProvider(this);
+    notificationProcider = new NotificationProvider(this);
     final float textSizePx =
         TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP, getResources().getDisplayMetrics());
@@ -155,7 +160,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     ++timestamp;
     final long currTimestamp = timestamp;
     byte[] originalLuminance = getLuminance();
-    checkObjectInDirection();
+    checkObjectInDirectionWithCoolDown();
     tracker.onFrame(
         previewWidth,
         previewHeight,
@@ -244,10 +249,23 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         });
   }
 
-  private void checkObjectInDirection() {
-    if(doObjectsExistsInCloseRangeDirectionally()) {
-      Toast.makeText(this, "Object in front in immediate proximity", Toast.LENGTH_LONG).show();
+  private void checkObjectInDirectionWithCoolDown() {
+    if(isCoolDownExpired() && doObjectsExistsInCloseRangeDirectionally()) {
+      notificationProcider.makeImmediateObjectInDirectionProximityNotification();
+      setCooldownTime();
     }
+  }
+
+  private boolean isCoolDownExpired() {
+    return OBJECT_IN_DIRECTION_COOLDOWN_IN_SECONDS < (getCurrentTimeInSeconds() - latestObjectInDirectionCheck);
+  }
+
+  private Long getCurrentTimeInSeconds() {
+    return System.currentTimeMillis()/1000;
+  }
+
+  private void setCooldownTime() {
+    latestObjectInDirectionCheck = getCurrentTimeInSeconds();
   }
 
   private boolean doObjectsExistsInCloseRangeDirectionally() {
