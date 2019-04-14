@@ -11,6 +11,8 @@ import static android.content.Context.SENSOR_SERVICE;
 
 public class DirectionalDistanceProvider implements SensorEventListener {
 
+    private final float OBSERVATION_HEIGHT_IN_METERS = 1.4f;
+
     SensorManager mSensorManager;
     Sensor accSensor;
     Sensor magnetSensor;
@@ -64,8 +66,10 @@ public class DirectionalDistanceProvider implements SensorEventListener {
     public void onAccuracyChanged(Sensor sensor, int i) { }
 
     public Float getDistanceToObjectInDirection(Context context) {
-        Float distance = Math.abs((float) (1.4f * Math.tan(pitch * Math.PI / 180)));
-        Toast.makeText(context, "DISTANCE: " + distance, Toast.LENGTH_SHORT).show();
+        int resultSanitizer = 2; //the values seem to too big by factor of multiply 2
+        double angleToObject = Math.tan(pitch * Math.PI / 180);
+        Float distance = (float) Math.abs ((OBSERVATION_HEIGHT_IN_METERS * angleToObject) / resultSanitizer);
+        Toast.makeText(context, "Distance: " + distance, Toast.LENGTH_SHORT).show();
         return distance;
 
     }
