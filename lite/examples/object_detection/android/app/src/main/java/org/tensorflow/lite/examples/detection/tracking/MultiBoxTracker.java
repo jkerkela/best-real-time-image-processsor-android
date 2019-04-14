@@ -16,7 +16,6 @@ limitations under the License.
 package org.tensorflow.lite.examples.detection.tracking;
 
 import android.app.Application;
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -423,13 +422,13 @@ public class MultiBoxTracker {
     trackedObjects.add(trackedRecognition);
   }
 
-  static class TrackedRecognition {
+  public static class TrackedRecognition {
     ObjectTracker.TrackedObject trackedObject;
-    RectF location;
+    public RectF location;
     float detectionConfidence;
     int color;
-    String title;
+    public String title;
     boolean validDetection;
-    String direction;
+    public String direction;
   }
 }

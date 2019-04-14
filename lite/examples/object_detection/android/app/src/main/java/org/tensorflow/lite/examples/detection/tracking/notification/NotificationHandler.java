@@ -1,9 +1,11 @@
-package org.tensorflow.lite.examples.detection.tracking;
+package org.tensorflow.lite.examples.detection.tracking.notification;
 
 import android.app.Application;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.widget.Toast;
+
+import org.tensorflow.lite.examples.detection.tracking.MultiBoxTracker;
 
 import java.util.Locale;
 import java.util.PriorityQueue;
@@ -11,7 +13,7 @@ import java.util.UUID;
 
 public class NotificationHandler implements TextToSpeech.OnInitListener {
 
-    PriorityQueue<ObjectNotification> objectNotificationPriorityQueue = new PriorityQueue<>();
+    private PriorityQueue<ObjectNotification> objectNotificationPriorityQueue = new PriorityQueue<>();
     private final Application context;
     private static NotificationHandler notificationHandler;
     private TextToSpeech textToSpeech;
@@ -54,14 +56,14 @@ public class NotificationHandler implements TextToSpeech.OnInitListener {
         objectNotificationPriorityQueue.add(notification);
     }
 
-    void makeImmediateObjectProximityNotification(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+    public void makeImmediateObjectProximityNotification(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         ObjectNotification notification = new ObjectNotification(
                 "Object: " + trackedRecognition.title + " in immediate proximity",
                 ObjectNotification.Priority.HIGH);
         addNotificationToQueue(notification);
     }
 
-    void makeNewObjectNotification(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+    public void makeNewObjectNotification(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         ObjectNotification notification = new ObjectNotification(
                 "New object: " + trackedRecognition.title + " on direction: " + trackedRecognition.direction,
                 ObjectNotification.Priority.LOW);

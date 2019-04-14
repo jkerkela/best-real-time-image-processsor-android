@@ -1,8 +1,10 @@
-package org.tensorflow.lite.examples.detection.tracking;
+package org.tensorflow.lite.examples.detection.tracking.location;
 
 import android.graphics.RectF;
 
-class ObjectLocationProvider {
+import org.tensorflow.lite.examples.detection.tracking.MultiBoxTracker;
+
+public class ObjectLocationProvider {
 
     private static final float VERTICAL_DIFF_FILTER_VALUE = 70.00f;
     private static final float HORIZONTAL_DIFF_FILTER_VALUE = 90.00f;
@@ -23,7 +25,7 @@ class ObjectLocationProvider {
         }
     }
 
-    static ObjectLocationProvider.Direction getObjectDirection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+    public static ObjectLocationProvider.Direction getObjectDirection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         if (trackedRecognition.location.left < VERTICAL_FRONT_DIRECTION_THRESHOLD) {
             return ObjectLocationProvider.Direction.IN_FRONT;
         } else if (trackedRecognition.location.top < VERTICAL_RIGHT_DIRECTION_THRESHOLD) {
@@ -35,7 +37,7 @@ class ObjectLocationProvider {
         }
     }
 
-    static boolean isObjectInImmidiateProximity(MultiBoxTracker.TrackedRecognition trackedRecognition) {
+    public static boolean isObjectInImmidiateProximity(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         Float relativeSizeOfObject = calculateRelativeAreaOfObject(trackedRecognition.location);
         return relativeSizeOfObject > IMMEDIATE_NEAR_ZONE;
     }
@@ -46,7 +48,7 @@ class ObjectLocationProvider {
         return length * breadth;
     }
 
-    static boolean doesDetectionRectLocationsDiffer(RectF recognitionLocation, RectF detectedLocation) {
+    public static boolean doesDetectionRectLocationsDiffer(RectF recognitionLocation, RectF detectedLocation) {
         return (doesValueDifferOverRedundancyFilter(recognitionLocation.bottom, detectedLocation.bottom, VERTICAL_DIFF_FILTER_VALUE) ||
                 doesValueDifferOverRedundancyFilter(recognitionLocation.top, detectedLocation.top, VERTICAL_DIFF_FILTER_VALUE) ||
                 doesValueDifferOverRedundancyFilter(recognitionLocation.left, detectedLocation.left, HORIZONTAL_DIFF_FILTER_VALUE) ||

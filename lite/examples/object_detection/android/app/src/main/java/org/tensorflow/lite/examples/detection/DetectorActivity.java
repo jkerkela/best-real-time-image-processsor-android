@@ -41,7 +41,8 @@ import org.tensorflow.lite.examples.detection.env.Logger;
 import org.tensorflow.lite.examples.detection.tflite.Classifier;
 import org.tensorflow.lite.examples.detection.tflite.TFLiteObjectDetectionAPIModel;
 import org.tensorflow.lite.examples.detection.tracking.MultiBoxTracker;
-import org.tensorflow.lite.examples.detection.tracking.NotificationHandler;
+import org.tensorflow.lite.examples.detection.tracking.location.DirectionalDistanceProvider;
+import org.tensorflow.lite.examples.detection.tracking.notification.NotificationHandler;
 
 /**
  * An activity that uses a TensorFlowMultiBoxDetector and ObjectTracker to detect and then track

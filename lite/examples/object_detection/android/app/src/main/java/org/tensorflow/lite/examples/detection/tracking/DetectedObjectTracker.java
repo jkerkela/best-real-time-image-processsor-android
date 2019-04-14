@@ -3,6 +3,8 @@ package org.tensorflow.lite.examples.detection.tracking;
 import android.app.Application;
 
 import org.tensorflow.lite.examples.detection.tflite.Classifier;
+import org.tensorflow.lite.examples.detection.tracking.location.ObjectLocationProvider;
+import org.tensorflow.lite.examples.detection.tracking.notification.NotificationHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,4 +1,4 @@
-package org.tensorflow.lite.examples.detection.tracking;
+package org.tensorflow.lite.examples.detection.tracking.notification;
 
 public class ObjectNotification implements Comparable<ObjectNotification> {
 

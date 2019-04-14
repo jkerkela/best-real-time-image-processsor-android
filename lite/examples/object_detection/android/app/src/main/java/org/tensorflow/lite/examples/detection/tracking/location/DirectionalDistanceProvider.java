@@ -1,4 +1,4 @@
-package org.tensorflow.lite.examples.detection;
+package org.tensorflow.lite.examples.detection.tracking.location;
 
 import android.content.Context;
 import android.hardware.Sensor;
@@ -9,7 +9,7 @@ import android.widget.Toast;
 
 import static android.content.Context.SENSOR_SERVICE;
 
-class DirectionalDistanceProvider implements SensorEventListener {
+public class DirectionalDistanceProvider implements SensorEventListener {
 
     SensorManager mSensorManager;
     Sensor accSensor;
@@ -22,7 +22,7 @@ class DirectionalDistanceProvider implements SensorEventListener {
     //for landscape mode
     private float roll;
 
-    DirectionalDistanceProvider(Context context) {
+    public DirectionalDistanceProvider(Context context) {
         initializeSensors(context);
         registerSensorListeners();
     }
@@ -63,7 +63,7 @@ class DirectionalDistanceProvider implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) { }
 
-    Float getDistanceToObjectInDirection(Context context) {
+    public Float getDistanceToObjectInDirection(Context context) {
         Float distance = Math.abs((float) (1.4f * Math.tan(pitch * Math.PI / 180)));
         Toast.makeText(context, "DISTANCE: " + distance, Toast.LENGTH_SHORT).show();
         return distance;
