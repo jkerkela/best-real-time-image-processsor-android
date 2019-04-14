@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import org.tensorflow.lite.examples.detection.tracking.MultiBoxTracker;
 
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.PriorityQueue;
 import java.util.UUID;
@@ -20,6 +21,7 @@ public class NotificationHandler implements TextToSpeech.OnInitListener {
 
     private Handler handler = new Handler();
     private final int delayInMilliSeconds = 5000;
+    private String lastNotification;
 
     private NotificationHandler(Application context) {
         textToSpeech = new TextToSpeech(context, this);
@@ -33,11 +35,24 @@ public class NotificationHandler implements TextToSpeech.OnInitListener {
     }
 
     private void postVoiceNotificationsFromQueue() {
-        ObjectNotification noficationToPost = objectNotificationPriorityQueue.poll();
-        if(noficationToPost != null) {
-            makeVoiceNotification(noficationToPost.getMessage());
+        ObjectNotification notificationToPost = getNewNotificationOrNull();
+        if(notificationToPost != null) {
+            makeVoiceNotification(notificationToPost.getMessage());
         }
         objectNotificationPriorityQueue.clear();
+    }
+
+    private ObjectNotification getNewNotificationOrNull() {
+        ObjectNotification objectNotification = null;
+        Iterator<ObjectNotification> iterator = objectNotificationPriorityQueue.iterator();
+        while (iterator.hasNext()) {
+            ObjectNotification objNotification = iterator.next();
+            if(!objNotification.getMessage().equals(lastNotification)){
+                return objNotification;
+            }
+            iterator.remove();
+        }
+        return objectNotification;
     }
 
     public static NotificationHandler getNotificationHandler(Application context) {
@@ -72,6 +87,7 @@ public class NotificationHandler implements TextToSpeech.OnInitListener {
 
     private void makeVoiceNotification(String notification) {
         UUID uniqueIdentifier = UUID.randomUUID();
+        this.lastNotification = notification;
         textToSpeech.speak(notification, TextToSpeech.QUEUE_FLUSH, null, uniqueIdentifier.toString());
     }
 
