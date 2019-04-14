@@ -5,6 +5,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.widget.Toast;
 
 import static android.content.Context.SENSOR_SERVICE;
 
@@ -62,7 +63,10 @@ class DirectionalDistanceProvider implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) { }
 
-    Float getDistanceToObjectInDirection() {
-        return Math.abs((float) (1.4f * Math.tan(Math.max(pitch, roll) * Math.PI / 180)));
+    Float getDistanceToObjectInDirection(Context context) {
+        Float distance = Math.abs((float) (1.4f * Math.tan(pitch * Math.PI / 180)));
+        Toast.makeText(context, "DISTANCE: " + distance, Toast.LENGTH_SHORT).show();
+        return distance;
+
     }
 }

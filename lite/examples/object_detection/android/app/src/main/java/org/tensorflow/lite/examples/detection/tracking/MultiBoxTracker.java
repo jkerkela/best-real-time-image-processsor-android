@@ -15,6 +15,7 @@ limitations under the License.
 
 package org.tensorflow.lite.examples.detection.tracking;
 
+import android.app.Application;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -81,10 +82,10 @@ public class MultiBoxTracker {
   private int frameWidth;
   private int frameHeight;
   private int sensorOrientation;
-  private Context context;
+  private Application context;
   private boolean initialized = false;
 
-  public MultiBoxTracker(final Context context) {
+  public MultiBoxTracker(final Application context) {
     this.context = context;
     for (final int color : COLORS) {
       availableColors.add(color);

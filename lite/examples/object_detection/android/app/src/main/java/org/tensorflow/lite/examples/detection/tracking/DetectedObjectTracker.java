@@ -1,6 +1,6 @@
 package org.tensorflow.lite.examples.detection.tracking;
 
-import android.content.Context;
+import android.app.Application;
 
 import org.tensorflow.lite.examples.detection.tflite.Classifier;
 
@@ -13,10 +13,10 @@ class DetectedObjectTracker {
 
     private List<MultiBoxTracker.TrackedRecognition> detectedObjects = new ArrayList<>();
     private List<String> newDetections = new ArrayList<>();
-    private NotificationProvider notificationProvider;
+    private NotificationHandler notificationHandler;
 
-    DetectedObjectTracker(Context context) {
-        this.notificationProvider = new NotificationProvider(context);
+    DetectedObjectTracker(Application context) {
+        this.notificationHandler = NotificationHandler.getNotificationHandler(context);
     }
 
     void handleDetection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
@@ -55,14 +55,14 @@ class DetectedObjectTracker {
 
     private void checkObjectDistance(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         if (ObjectLocationProvider.isObjectInImmidiateProximity(trackedRecognition)) {
-            notificationProvider.makeImmediateObjectProximityNotification(trackedRecognition);
+            notificationHandler.makeImmediateObjectProximityNotification(trackedRecognition);
         }
     }
 
     private void handlePotentialNewObject(MultiBoxTracker.TrackedRecognition trackedRecognition) {
         if(detectedObjects.isEmpty() || !isObjectDetectedBefore(trackedRecognition)) {
             this.detectedObjects.add(trackedRecognition);
-            notificationProvider.makeNewObjectNotification(trackedRecognition);
+            notificationHandler.makeNewObjectNotification(trackedRecognition);
         }
     }
 

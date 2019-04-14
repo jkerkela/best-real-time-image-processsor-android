@@ -41,7 +41,7 @@ import org.tensorflow.lite.examples.detection.env.Logger;
 import org.tensorflow.lite.examples.detection.tflite.Classifier;
 import org.tensorflow.lite.examples.detection.tflite.TFLiteObjectDetectionAPIModel;
 import org.tensorflow.lite.examples.detection.tracking.MultiBoxTracker;
-import org.tensorflow.lite.examples.detection.tracking.NotificationProvider;
+import org.tensorflow.lite.examples.detection.tracking.NotificationHandler;
 
 /**
  * An activity that uses a TensorFlowMultiBoxDetector and ObjectTracker to detect and then track
@@ -86,21 +86,21 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private BorderedText borderedText;
 
   private DirectionalDistanceProvider directionalDistanceProvider;
-  private NotificationProvider notificationProcider;
+  private NotificationHandler notificationHandler;
   private Long OBJECT_IN_DIRECTION_COOLDOWN_IN_SECONDS = 5L;
   private long latestObjectInDirectionCheck;
 
   @Override
   public void onPreviewSizeChosen(final Size size, final int rotation) {
     directionalDistanceProvider = new DirectionalDistanceProvider(this);
-    notificationProcider = new NotificationProvider(this);
+    notificationHandler = NotificationHandler.getNotificationHandler(getApplication());
     final float textSizePx =
         TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP, getResources().getDisplayMetrics());
     borderedText = new BorderedText(textSizePx);
     borderedText.setTypeface(Typeface.MONOSPACE);
 
-    tracker = new MultiBoxTracker(this);
+    tracker = new MultiBoxTracker(getApplication());
 
     int cropSize = TF_OD_API_INPUT_SIZE;
 
@@ -251,8 +251,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   private void checkObjectInDirectionWithCoolDown() {
     if(isCoolDownExpired() && doObjectsExistsInCloseRangeDirectionally()) {
-      notificationProcider.makeImmediateObjectInDirectionProximityNotification();
-      setCooldownTime();
+      notificationHandler.makeImmediateObjectInDirectionProximityNotification();
+      resetCooldownTime();
     }
   }
 
@@ -264,12 +264,12 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     return System.currentTimeMillis()/1000;
   }
 
-  private void setCooldownTime() {
+  private void resetCooldownTime() {
     latestObjectInDirectionCheck = getCurrentTimeInSeconds();
   }
 
   private boolean doObjectsExistsInCloseRangeDirectionally() {
-    return (directionalDistanceProvider.getDistanceToObjectInDirection() < 5.0);
+    return (directionalDistanceProvider.getDistanceToObjectInDirection(this) < 3.0);
   }
 
   @Override
