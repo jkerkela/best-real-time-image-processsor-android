@@ -1,6 +1,7 @@
 package org.tensorflow.lite.examples.detection.tracking.notification;
 
 import android.app.Application;
+import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.widget.Toast;
@@ -11,21 +12,31 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.PriorityQueue;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static android.speech.tts.TextToSpeech.Engine.KEY_PARAM_VOLUME;
 
 public class NotificationHandler implements TextToSpeech.OnInitListener {
 
-    private PriorityQueue<ObjectNotification> objectNotificationPriorityQueue = new PriorityQueue<>();
     private final Application context;
-    private static NotificationHandler notificationHandler;
-    private TextToSpeech textToSpeech;
-
-    private Handler handler = new Handler();
     private final int delayInMilliSeconds = 5000;
+    private static NotificationHandler notificationHandler;
+    private static Bundle speechParams = new Bundle();
+
+    private PriorityQueue<ObjectNotification> objectNotificationPriorityQueue = new PriorityQueue<>();
+    private TextToSpeech textToSpeech;
+    private Handler handler = new Handler();
     private String lastNotification;
+
+    public static NotificationHandler getNotificationHandler(Application context) {
+        if (notificationHandler == null) { notificationHandler = new NotificationHandler(context); }
+        return notificationHandler;
+    }
 
     private NotificationHandler(Application context) {
         textToSpeech = new TextToSpeech(context, this);
         this.context = context;
+        speechParams.putString(KEY_PARAM_VOLUME, "0,5");
         handler.postDelayed(new Runnable(){
             public void run(){
                 postVoiceNotificationsFromQueue();
@@ -35,11 +46,22 @@ public class NotificationHandler implements TextToSpeech.OnInitListener {
     }
 
     private void postVoiceNotificationsFromQueue() {
-        ObjectNotification notificationToPost = getNewNotificationOrNull();
-        if(notificationToPost != null) {
-            makeVoiceNotification(notificationToPost.getMessage());
+        AtomicInteger announcements = new AtomicInteger();
+        while (announcements.get() < 2) {
+            ObjectNotification notificationToPost = getNewNotificationOrNull();
+            if (notificationToPost != null) {
+                makeVoiceNotification(notificationToPost.getMessage());
+            } else {
+                break;
+            }
+            announcements.getAndIncrement();
         }
+        resetNotifications();
+    }
+
+    private void resetNotifications() {
         objectNotificationPriorityQueue.clear();
+        lastNotification = null;
     }
 
     private ObjectNotification getNewNotificationOrNull() {
@@ -53,11 +75,6 @@ public class NotificationHandler implements TextToSpeech.OnInitListener {
             iterator.remove();
         }
         return objectNotification;
-    }
-
-    public static NotificationHandler getNotificationHandler(Application context) {
-        if (notificationHandler == null) { notificationHandler = new NotificationHandler(context); }
-        return notificationHandler;
     }
 
     public void makeImmediateObjectInDirectionProximityNotification() {
@@ -88,7 +105,7 @@ public class NotificationHandler implements TextToSpeech.OnInitListener {
     private void makeVoiceNotification(String notification) {
         UUID uniqueIdentifier = UUID.randomUUID();
         this.lastNotification = notification;
-        textToSpeech.speak(notification, TextToSpeech.QUEUE_FLUSH, null, uniqueIdentifier.toString());
+        textToSpeech.speak(notification, TextToSpeech.QUEUE_FLUSH, speechParams, uniqueIdentifier.toString());
     }
 
     @Override

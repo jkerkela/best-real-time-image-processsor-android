@@ -1,6 +1,7 @@
 package org.tensorflow.lite.examples.detection.tracking.location;
 
 import android.graphics.RectF;
+import android.support.annotation.NonNull;
 
 import org.tensorflow.lite.examples.detection.tracking.MultiBoxTracker;
 
@@ -22,6 +23,12 @@ public class ObjectLocationProvider {
 
         private Direction(String s) {
             name = s;
+        }
+
+        @Override
+        @NonNull
+        public String toString() {
+            return name;
         }
     }
 

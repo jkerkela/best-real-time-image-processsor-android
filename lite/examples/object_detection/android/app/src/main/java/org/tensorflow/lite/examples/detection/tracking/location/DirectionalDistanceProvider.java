@@ -69,7 +69,7 @@ public class DirectionalDistanceProvider implements SensorEventListener {
         int resultSanitizer = 2; //the values seem to too big by factor of multiply 2
         double angleToObject = Math.tan(pitch * Math.PI / 180);
         Float distance = (float) Math.abs ((OBSERVATION_HEIGHT_IN_METERS * angleToObject) / resultSanitizer);
-        Toast.makeText(context, "Distance: " + distance, Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Distance: " + distance + " meters", Toast.LENGTH_SHORT).show();
         return distance;
 
     }

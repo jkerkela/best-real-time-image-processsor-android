@@ -89,7 +89,7 @@ class DetectedObjectTracker {
     }
 
     private void updateDirection(MultiBoxTracker.TrackedRecognition trackedRecognition) {
-        trackedRecognition.direction = ObjectLocationProvider.getObjectDirection(trackedRecognition).name();
+        trackedRecognition.direction = ObjectLocationProvider.getObjectDirection(trackedRecognition).toString();
     }
 
     private void updateDetectedObjectData(MultiBoxTracker.TrackedRecognition trackedRecognition) {
